@@ -169,9 +169,20 @@ def parse_table_rows(markdown: str) -> list[dict]:
             cols = [c.strip() for c in line.strip("|").split("|")]
             if len(cols) == len(headers):
                 row = {}
+                extracted_link = ""
                 for k, v in zip(headers, cols):
-                    row[k] = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", v)
-                    row[k] = re.sub(r"<[^>]+>", "", row[k]).strip()
+                    # Capture URLs from markdown links before stripping them
+                    if not extracted_link:
+                        md_links = re.findall(r'\[[^\]]*\]\((https?://[^)]+)\)', v)
+                        if md_links:
+                            extracted_link = md_links[0]
+                    val = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", v)
+                    val = re.sub(r"<[^>]+>", "", val)
+                    val = re.sub(r"\*+", "", val)   # strip **bold** markers
+                    val = re.sub(r"_{2,}", "", val)  # strip __bold__ markers
+                    row[k] = val.strip()
+                if extracted_link:
+                    row["_link"] = extracted_link
                 rows.append(row)
         elif in_table and not line.startswith("|") and line != "":
             in_table = False
@@ -197,6 +208,9 @@ def score_row(row: dict) -> tuple[int, list[str]]:
     return score, matched
 
 def find_job_link(row: dict) -> str:
+    # Prefer URL captured directly from markdown link syntax
+    if row.get("_link"):
+        return row["_link"]
     raw = " ".join(str(v) for v in row.values())
     urls = re.findall(r"https?://[^\s\)\]\"'<>]+", raw)
     for url in urls:

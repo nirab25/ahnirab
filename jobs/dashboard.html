@@ -454,6 +454,10 @@
 
 <script>
 'use strict';
+
+function clean(s) { return String(s||'').replace(/\*+/g,'').replace(/_{2,}/g,'').trim(); }
+function esc(s)   { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 // ── Storage ──────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'job_tracker_v3';
 let store = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"jobs":[],"batches":{}}');
@@ -653,8 +657,8 @@ function render() {
     return `
       <tr data-id="${j.id}" onclick="openDetail('${j.id}')" class="${selectedJobId===j.id?'row-selected':''}">
         <td style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);white-space:nowrap">${j.date_found||j.date_added||''}</td>
-        <td style="font-weight:600;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${esc(j.company)}</td>
-        <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b0c8e0">${esc(j.role)}</td>
+        <td style="font-weight:600;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${esc(clean(j.company))}</td>
+        <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b0c8e0">${esc(clean(j.role))}</td>
         <td style="font-size:0.78rem;color:var(--muted);white-space:nowrap">${locStr}</td>
         <td><span class="badge ${sc.cls}">${sc.emoji} ${esc(j.status)}</span></td>
         <td>${j.score ? `<span class="score-pill ${sCls}">${j.score}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
@@ -673,9 +677,6 @@ function sortBy(key) {
   render();
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
 
 // ── Detail panel ─────────────────────────────────────────────────────────────
 function openDetail(id) {
@@ -688,8 +689,8 @@ function openDetail(id) {
     tr.classList.toggle('row-selected', tr.dataset.id === id));
 
   // Header
-  document.getElementById('dp-company').textContent = j.company || '';
-  document.getElementById('dp-role').textContent    = j.role    || '';
+  document.getElementById('dp-company').textContent = clean(j.company);
+  document.getElementById('dp-role').textContent    = clean(j.role);
 
   // Body rows
   const country = getCountry(j);
@@ -857,8 +858,8 @@ function processImport(arr) {
       date_found:    row.date_found || batchDate,
       date_added:    new Date().toISOString().split('T')[0],
       date_applied:  '',
-      company:       row.company || row.company_name || '',
-      role:          row.role || row.position || row.title || row.job_title || '',
+      company:       clean(row.company || row.company_name || ''),
+      role:          clean(row.role || row.position || row.title || row.job_title || ''),
       source:        row.source_id || row.source || 'Other',
       location:      row.location || '',
       flag:          row.flag || '',
