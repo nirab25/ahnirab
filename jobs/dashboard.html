@@ -861,37 +861,58 @@ function importJSON(evt) {
 function processImport(arr) {
   if (!Array.isArray(arr) || !arr.length) { alert('Empty or invalid data.'); return; }
   const batchDate = arr[0]?.date_found || new Date().toISOString().split('T')[0];
-  const existingLinks = new Set(store.jobs.map(j => j.link).filter(isValidUrl));
+
+  // Guard: batch already loaded → ask before re-importing
+  if (store.batches[batchDate]) {
+    const b = store.batches[batchDate];
+    if (!confirm(`Batch ${batchDate} already loaded (${b.count} jobs, ${b.imported_at}).\nReplace it with fresh data?`)) return;
+    // Remove old batch jobs and re-import cleanly
+    store.jobs = store.jobs.filter(j => (j.date_found || j.date_added) !== batchDate);
+    delete store.batches[batchDate];
+  }
+
+  // Dedup by URL (for jobs with real URLs) OR by company+role composite key
+  const existingUrls = new Set(store.jobs.map(j => j.link).filter(isValidUrl));
+  const existingKeys = new Set(store.jobs.map(j =>
+    `${(j.company||'').toLowerCase()}|${(j.role||'').toLowerCase()}`));
+
   const mapped = arr
-    .filter(row => !isValidUrl(row.link) || !existingLinks.has(row.link))
+    .filter(row => {
+      const company = clean(row.company || row.company_name || '').toLowerCase();
+      const role    = clean(row.role || row.position || row.title || row.job_title || '').toLowerCase();
+      const url     = isValidUrl(row.link) ? row.link : null;
+      if (url) return !existingUrls.has(url);
+      return !existingKeys.has(`${company}|${role}`);
+    })
     .map(row => ({
       id: getId(),
-      date_found:    row.date_found || batchDate,
-      date_added:    new Date().toISOString().split('T')[0],
-      date_applied:  '',
-      company:       clean(row.company || row.company_name || ''),
-      role:          clean(row.role || row.position || row.title || row.job_title || ''),
-      source:        row.source_id || row.source || 'Other',
-      location:      row.location || '',
-      flag:          row.flag || '',
-      status:        'Wishlist',
-      score:         '',
-      filter_score:  row.score ?? '',       // numeric fit score from filter.py
+      date_found:       row.date_found || batchDate,
+      date_added:       new Date().toISOString().split('T')[0],
+      date_applied:     '',
+      company:          clean(row.company || row.company_name || ''),
+      role:             clean(row.role || row.position || row.title || row.job_title || ''),
+      source:           row.source_id || row.source || 'Other',
+      location:         row.location || '',
+      flag:             row.flag || '',
+      status:           'Wishlist',
+      score:            '',
+      filter_score:     row.score ?? '',
       matched_keywords: row.matched_keywords || [],
-      link:          isValidUrl(row.link) ? row.link : '',
-      notes:         [
+      link:             isValidUrl(row.link) ? row.link : '',
+      notes:            [
         row.score != null ? `Filter fit: ${row.score}` : '',
         row.matched_keywords?.length ? `Keywords: ${row.matched_keywords.join(', ')}` : '',
         row.added ? `Listed: ${row.added}` : '',
       ].filter(Boolean).join(' · '),
     }));
+
   if (!mapped.length) {
-    alert(`No new jobs (${arr.length} duplicates skipped).`); return;
+    alert(`All ${arr.length} jobs already in tracker — nothing new.`); return;
   }
   store.jobs = [...mapped, ...store.jobs];
   store.batches[batchDate] = { count: mapped.length, imported_at: new Date().toLocaleString() };
   save(); selectDate(batchDate); renderSidebar();
-  alert(`Imported ${mapped.length} jobs for ${batchDate}`);
+  alert(`Imported ${mapped.length} new jobs for ${batchDate}`);
 }
 
 // ── Export ────────────────────────────────────────────────────────────────────
