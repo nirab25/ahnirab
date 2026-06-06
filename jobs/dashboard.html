@@ -124,6 +124,9 @@
     .btn-export:hover { border-color: var(--blue); color: var(--blue); }
     .btn-import { background: transparent; border: 1px solid var(--border); color: var(--muted); }
     .btn-import:hover { border-color: var(--green); color: var(--green); }
+    .btn-refresh { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-refresh:hover { border-color: oklch(78% 0.18 80); color: var(--yellow); }
+    .btn-refresh.loading { opacity: 0.5; pointer-events: none; }
 
     /* ── Table ── */
     .table-wrap { overflow-x: auto; padding: 0.75rem 1.5rem; }
@@ -276,8 +279,9 @@
         <option value="Other">Other</option>
       </select>
       <button class="btn-add" onclick="openModal()">+ Add Job</button>
+      <button class="btn-refresh" id="btn-refresh" onclick="fetchLatest()">↻ Load Latest</button>
       <button class="btn-export" onclick="exportCSV()">Export CSV</button>
-      <button class="btn-import" onclick="document.getElementById('import-file').click()">Import JSON</button>
+      <button class="btn-import" onclick="document.getElementById('import-file').click()">Upload JSON</button>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)" />
     </div>
 
@@ -285,11 +289,11 @@
     <div class="tip-box" id="tip-box">
       <h3>Workflow</h3>
       <ol>
-        <li>Run <code>python jobs/filter.py</code> → get today's H-1B matches → import the JSON here</li>
-        <li>Each import is stored by date — use the sidebar to browse runs history</li>
+        <li>Click <strong>↻ Load Latest</strong> to fetch today's GitHub Actions job results automatically</li>
+        <li>Or go to <a href="https://github.com/nirab25/ahnirab/actions" target="_blank" style="color:var(--blue)">GitHub Actions</a> → <em>Daily Job Search</em> → <em>Run workflow</em> to trigger a fresh search</li>
+        <li>Each import is stored by date — use the sidebar to browse past runs</li>
         <li>Paste a job URL into Claude Code → <code>/career-ops</code> → get A–F score + tailored CV PDF</li>
-        <li>Update job status as you progress through the pipeline</li>
-        <li>For skills gaps, run <code>/career-ops training</code> in your career-ops fork</li>
+        <li>For skills gaps, run <code>/career-ops training</code>; for interview prep, run <code>/career-ops deep [Company]</code></li>
       </ol>
     </div>
 
@@ -548,47 +552,15 @@
     return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* ── Import ── */
+  /* ── Import (file upload) ── */
   function importJSON(evt) {
     const file = evt.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
       try {
-        const data = JSON.parse(e.target.result);
-        const arr = Array.isArray(data) ? data : [];
-        // Determine batch date from data or filename
-        const batchDate = arr[0]?.date_found || new Date().toISOString().split('T')[0];
-        // De-duplicate by link; keep existing if already present
-        const existingLinks = new Set(store.jobs.map(j => j.link).filter(Boolean));
-        const mapped = arr
-          .filter(row => !row.link || !existingLinks.has(row.link))
-          .map(row => ({
-            id: getId(),
-            date_found: row.date_found || batchDate,
-            date_added: new Date().toISOString().split('T')[0],
-            date_applied: '',
-            company: row.company || row.company_name || '',
-            role: row.role || row.position || row.title || row.job_title || '',
-            source: row.source_id || row.source || 'Other',
-            status: 'Wishlist',
-            score: '',
-            link: row.link || '',
-            notes: [
-              row.score ? `Filter score: ${row.score}` : '',
-              row.matched_keywords?.length ? `Keywords: ${row.matched_keywords.join(', ')}` : '',
-            ].filter(Boolean).join(' · '),
-          }));
-        store.jobs = [...mapped, ...store.jobs];
-        // Record batch metadata
-        store.batches[batchDate] = {
-          count: mapped.length,
-          imported_at: new Date().toLocaleString(),
-        };
-        save();
-        selectDate(batchDate);
-        renderSidebar();
-        alert(`Imported ${mapped.length} new jobs for ${batchDate}${arr.length - mapped.length ? ` (${arr.length - mapped.length} duplicates skipped)` : ''}`);
+        const arr = JSON.parse(e.target.result);
+        processImport(Array.isArray(arr) ? arr : [], 'upload');
       } catch { alert('Invalid JSON file'); }
     };
     reader.readAsText(file);
@@ -671,6 +643,60 @@
     store.jobs = store.jobs.filter(x => x.id !== id);
     save();
     render();
+  }
+
+  /* ── Fetch latest from GitHub ── */
+  const RAW_JSON_URL = 'https://raw.githubusercontent.com/nirab25/ahnirab/main/jobs/matched_jobs.json';
+
+  async function fetchLatest() {
+    const btn = document.getElementById('btn-refresh');
+    btn.textContent = '↻ Fetching…';
+    btn.classList.add('loading');
+    try {
+      const res = await fetch(RAW_JSON_URL + '?t=' + Date.now());
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      processImport(data, 'github');
+    } catch (err) {
+      alert('Could not fetch latest results: ' + err.message +
+        '\n\nMake sure the GitHub Actions workflow has run at least once and GitHub Pages is enabled.');
+    } finally {
+      btn.textContent = '↻ Load Latest';
+      btn.classList.remove('loading');
+    }
+  }
+
+  function processImport(arr, source) {
+    const batchDate = arr[0]?.date_found || new Date().toISOString().split('T')[0];
+    const existingLinks = new Set(store.jobs.map(j => j.link).filter(Boolean));
+    const mapped = arr
+      .filter(row => !row.link || !existingLinks.has(row.link))
+      .map(row => ({
+        id: getId(),
+        date_found: row.date_found || batchDate,
+        date_added: new Date().toISOString().split('T')[0],
+        date_applied: '',
+        company: row.company || row.company_name || '',
+        role: row.role || row.position || row.title || row.job_title || '',
+        source: row.source_id || row.source || 'Other',
+        status: 'Wishlist',
+        score: '',
+        link: row.link || '',
+        notes: [
+          row.score ? `Filter score: ${row.score}` : '',
+          row.matched_keywords?.length ? `Keywords: ${row.matched_keywords.join(', ')}` : '',
+        ].filter(Boolean).join(' · '),
+      }));
+    if (!mapped.length) {
+      alert(`No new jobs to import for ${batchDate} (${arr.length - mapped.length} duplicates skipped).`);
+      return;
+    }
+    store.jobs = [...mapped, ...store.jobs];
+    store.batches[batchDate] = { count: mapped.length, imported_at: new Date().toLocaleString() };
+    save();
+    selectDate(batchDate);
+    renderSidebar();
+    alert(`Imported ${mapped.length} new jobs for ${batchDate}${arr.length - mapped.length ? ` (${arr.length - mapped.length} duplicates skipped)` : ''}`);
   }
 
   /* ── Listeners ── */

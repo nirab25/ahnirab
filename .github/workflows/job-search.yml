@@ -1,0 +1,30 @@
+name: Daily Job Search
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 6:00 AM UTC daily (12 PM Bangladesh time)
+  workflow_dispatch:        # Manual trigger from GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run job filter
+        run: python jobs/filter.py --output jobs/matched_jobs.json
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add jobs/matched_jobs.json
+          git diff --staged --quiet && echo "No changes" || \
+            git commit -m "chore: job search results $(date +%Y-%m-%d)" && git push
