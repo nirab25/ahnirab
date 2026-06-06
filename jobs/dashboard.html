@@ -733,10 +733,6 @@ function openDetail(id) {
     </div>` : '');
 
   // Actions
-  const applyBtn = isValidUrl(j.link)
-    ? `<a class="btn-apply-now" href="${esc(j.link)}" target="_blank" rel="noopener">↗ Apply Now</a>`
-    : `<button class="btn-apply-now disabled">No URL available</button>`;
-
   const hasUrl = isValidUrl(j.link);
   const searchQ = encodeURIComponent(`${clean(j.company)} ${clean(j.role)} job apply`);
   const googleUrl = `https://www.google.com/search?q=${searchQ}`;
