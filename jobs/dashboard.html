@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Tracker — Amdadul Haque</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #070c14; --surface: #0c1220; --card: #101826;
+      --border: #1a2740; --border2: #1e3050;
+      --blue: oklch(62% 0.19 240);
+      --blue-dim: oklch(62% 0.19 240 / 0.15);
+      --text: #d8e4f0; --muted: #5a7090; --subtle: #243048;
+      --green: #22c55e; --yellow: #eab308; --red: #ef4444; --purple: #a855f7;
+      --mono: 'JetBrains Mono', monospace; --sans: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
+
+    /* ── Header ── */
+    header {
+      background: oklch(4% 0.02 240 / 0.9);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px);
+    }
+    header h1 { font-family: var(--mono); font-size: 0.9rem; color: var(--blue); }
+    header span { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+
+    /* ── Stats bar ── */
+    .stats {
+      display: flex; gap: 1rem; padding: 1rem 2rem; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-chip {
+      background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .stat-chip .num { font-family: var(--mono); font-size: 1.2rem; font-weight: 600; color: var(--blue); }
+    .stat-chip .lbl { font-size: 0.72rem; color: var(--muted); }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex; gap: 0.75rem; padding: 1rem 2rem; flex-wrap: wrap; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    input, select, textarea {
+      background: var(--card); border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text); font-family: var(--sans); font-size: 13px; padding: 0.45rem 0.75rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--blue); }
+    input::placeholder { color: var(--muted); }
+    select option { background: var(--card); }
+    .toolbar input[type="text"] { flex: 1; min-width: 200px; }
+    button {
+      cursor: pointer; border: none; border-radius: 4px; font-family: var(--mono);
+      font-size: 0.75rem; padding: 0.45rem 1rem; transition: all 0.2s;
+    }
+    .btn-add { background: var(--blue); color: #fff; }
+    .btn-add:hover { filter: brightness(1.15); }
+    .btn-export { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-export:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-import { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-import:hover { border-color: var(--green); color: var(--green); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; padding: 1rem 2rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted); text-align: left;
+      padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border);
+      white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    th:hover { color: var(--blue); }
+    td { padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:hover td { background: var(--surface); }
+    .empty-row td { text-align: center; padding: 3rem; color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+
+    /* ── Status badges ── */
+    .badge {
+      display: inline-block; font-family: var(--mono); font-size: 0.65rem;
+      padding: 0.2rem 0.5rem; border-radius: 3px; font-weight: 600; white-space: nowrap;
+    }
+    .badge-wishlist   { background: oklch(62% 0.19 240 / 0.15); color: var(--blue); }
+    .badge-applied    { background: oklch(65% 0.15 200 / 0.15); color: #38bdf8; }
+    .badge-phone      { background: oklch(78% 0.18 80 / 0.15);  color: var(--yellow); }
+    .badge-interview  { background: oklch(78% 0.18 80 / 0.2);   color: #f59e0b; }
+    .badge-offer      { background: oklch(65% 0.2 145 / 0.15);  color: var(--green); }
+    .badge-rejected   { background: oklch(55% 0.22 25 / 0.15);  color: var(--red); }
+    .badge-withdrawn  { background: oklch(55% 0.1 280 / 0.15);  color: var(--purple); }
+
+    /* ── Score pill ── */
+    .score-pill {
+      display: inline-block; font-family: var(--mono); font-size: 0.65rem;
+      padding: 0.15rem 0.4rem; border-radius: 3px; font-weight: 600;
+    }
+    .score-a { background: oklch(65% 0.2 145/0.2); color: var(--green); }
+    .score-b { background: oklch(65% 0.18 160/0.2); color: #34d399; }
+    .score-c { background: oklch(78% 0.18 80/0.2); color: var(--yellow); }
+    .score-d { background: oklch(65% 0.2 50/0.2); color: #fb923c; }
+    .score-f { background: oklch(55% 0.22 25/0.2); color: var(--red); }
+
+    /* ── Row actions ── */
+    .row-actions { display: flex; gap: 0.35rem; opacity: 0; transition: opacity 0.15s; }
+    tr:hover .row-actions { opacity: 1; }
+    .btn-edit, .btn-del {
+      font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 3px;
+      background: var(--subtle); color: var(--muted); border: 1px solid var(--border);
+    }
+    .btn-edit:hover { color: var(--blue); border-color: var(--blue); }
+    .btn-del:hover  { color: var(--red); border-color: var(--red); }
+
+    /* ── Link cell ── */
+    .job-link a { color: var(--blue); text-decoration: none; font-family: var(--mono); font-size: 0.7rem; }
+    .job-link a:hover { text-decoration: underline; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border2); border-radius: 10px;
+      padding: 2rem; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    }
+    .modal h2 { font-size: 1rem; margin-bottom: 1.5rem; color: #ddeeff; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .form-full { grid-column: span 2; }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-group label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; }
+    .btn-save { background: var(--blue); color: #fff; padding: 0.5rem 1.5rem; }
+    .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.5rem 1rem; }
+
+    /* ── Workflow tip ── */
+    .tip-box {
+      margin: 0 2rem 1rem; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.25rem 1.5rem;
+    }
+    .tip-box h3 { font-family: var(--mono); font-size: 0.72rem; color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .tip-box ol { padding-left: 1.2rem; }
+    .tip-box li { font-size: 0.82rem; color: var(--muted); padding: 0.2rem 0; line-height: 1.6; }
+    .tip-box code { font-family: var(--mono); font-size: 0.75rem; background: var(--subtle); padding: 0.1rem 0.35rem; border-radius: 3px; color: var(--text); }
+
+    @media (max-width: 640px) {
+      .stats, .toolbar, .table-wrap, .tip-box { padding: 0.75rem 1rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-full { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>// job-tracker</h1>
+  <span id="last-updated"></span>
+</header>
+
+<!-- Stats bar -->
+<div class="stats" id="stats-bar"></div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <input type="text" id="search-input" placeholder="Search company, role, notes..." />
+  <select id="filter-status">
+    <option value="">All Statuses</option>
+    <option value="Wishlist">Wishlist</option>
+    <option value="Applied">Applied</option>
+    <option value="Phone Screen">Phone Screen</option>
+    <option value="Interview">Interview</option>
+    <option value="Offer">Offer</option>
+    <option value="Rejected">Rejected</option>
+    <option value="Withdrawn">Withdrawn</option>
+  </select>
+  <select id="filter-source">
+    <option value="">All Sources</option>
+    <option value="jobright_h1b">Jobright H1B</option>
+    <option value="lamiiine_visa">Lamiiine Visa</option>
+    <option value="speedyapply_ai">Speedyapply AI</option>
+    <option value="LinkedIn">LinkedIn</option>
+    <option value="Company Site">Company Site</option>
+    <option value="Referral">Referral</option>
+    <option value="Other">Other</option>
+  </select>
+  <button class="btn-add" onclick="openModal()">+ Add Job</button>
+  <button class="btn-export" onclick="exportCSV()">Export CSV</button>
+  <button class="btn-import" onclick="document.getElementById('import-file').click()">Import JSON</button>
+  <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)" />
+</div>
+
+<!-- Workflow tip -->
+<div class="tip-box">
+  <h3>Workflow</h3>
+  <ol>
+    <li>Run <code>python jobs/filter.py</code> to get today's H-1B matches from GitHub repos</li>
+    <li>Paste a job URL into Claude Code → type <code>/career-ops</code> → get A–F score + tailored CV PDF</li>
+    <li>Add promising jobs here (score B+ recommended) and track status through the pipeline</li>
+    <li>For skills gaps found by career-ops, run <code>/career-ops training</code> to get course recommendations</li>
+    <li>Before interviews, run <code>/career-ops deep [company]</code> for company research + prep questions</li>
+  </ol>
+</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('date_added')">Date</th>
+        <th onclick="sortBy('company')">Company</th>
+        <th onclick="sortBy('role')">Role</th>
+        <th onclick="sortBy('source')">Source</th>
+        <th onclick="sortBy('status')">Status</th>
+        <th onclick="sortBy('score')">Score</th>
+        <th>Link</th>
+        <th onclick="sortBy('notes')">Notes</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="jobs-tbody"></tbody>
+  </table>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Add Job</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Company *</label>
+        <input type="text" id="f-company" placeholder="e.g. Epic Systems" />
+      </div>
+      <div class="form-group">
+        <label>Role *</label>
+        <input type="text" id="f-role" placeholder="e.g. Senior AI Engineer" />
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="Wishlist">Wishlist</option>
+          <option value="Applied">Applied</option>
+          <option value="Phone Screen">Phone Screen</option>
+          <option value="Interview">Interview</option>
+          <option value="Offer">Offer</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Withdrawn">Withdrawn</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Source</label>
+        <select id="f-source">
+          <option value="jobright_h1b">Jobright H1B</option>
+          <option value="lamiiine_visa">Lamiiine Visa</option>
+          <option value="speedyapply_ai">Speedyapply AI</option>
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="Company Site">Company Site</option>
+          <option value="Referral">Referral</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>career-ops Score (A–F)</label>
+        <select id="f-score">
+          <option value="">—</option>
+          <option value="A">A — Excellent fit</option>
+          <option value="B">B — Good fit</option>
+          <option value="C">C — Moderate fit</option>
+          <option value="D">D — Weak fit</option>
+          <option value="F">F — Poor fit</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date Applied</label>
+        <input type="date" id="f-date" />
+      </div>
+      <div class="form-group form-full">
+        <label>Job URL</label>
+        <input type="url" id="f-link" placeholder="https://..." />
+      </div>
+      <div class="form-group form-full">
+        <label>Notes (skills gap, interview prep, contacts...)</label>
+        <textarea id="f-notes" placeholder="e.g. Requires LangGraph experience — run /career-ops training. Recruiter: Jane Doe"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save btn-add" onclick="saveJob()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'job_tracker_v1';
+  let jobs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let editingId = null;
+  let sortKey = 'date_added';
+  let sortAsc = false;
+
+  const STATUS_CONFIG = {
+    'Wishlist':      { cls: 'badge-wishlist',  emoji: '◎' },
+    'Applied':       { cls: 'badge-applied',   emoji: '→' },
+    'Phone Screen':  { cls: 'badge-phone',     emoji: '◷' },
+    'Interview':     { cls: 'badge-interview', emoji: '◈' },
+    'Offer':         { cls: 'badge-offer',     emoji: '★' },
+    'Rejected':      { cls: 'badge-rejected',  emoji: '✕' },
+    'Withdrawn':     { cls: 'badge-withdrawn', emoji: '↩' },
+  };
+
+  const SCORE_CLS = { A:'score-a', B:'score-b', C:'score-c', D:'score-d', F:'score-f' };
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+    document.getElementById('last-updated').textContent =
+      'Last saved: ' + new Date().toLocaleTimeString();
+  }
+
+  function getId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+  function openModal(id = null) {
+    editingId = id;
+    const modal = document.getElementById('modal');
+    document.getElementById('modal-title').textContent = id ? 'Edit Job' : 'Add Job';
+    if (id) {
+      const j = jobs.find(x => x.id === id);
+      if (!j) return;
+      document.getElementById('f-company').value = j.company || '';
+      document.getElementById('f-role').value = j.role || '';
+      document.getElementById('f-status').value = j.status || 'Applied';
+      document.getElementById('f-source').value = j.source || 'Other';
+      document.getElementById('f-score').value = j.score || '';
+      document.getElementById('f-date').value = j.date_applied || '';
+      document.getElementById('f-link').value = j.link || '';
+      document.getElementById('f-notes').value = j.notes || '';
+    } else {
+      ['f-company','f-role','f-date','f-link','f-notes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('f-status').value = 'Applied';
+      document.getElementById('f-source').value = 'Other';
+      document.getElementById('f-score').value = '';
+      document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    }
+    modal.classList.add('open');
+    document.getElementById('f-company').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    editingId = null;
+  }
+
+  function saveJob() {
+    const company = document.getElementById('f-company').value.trim();
+    const role = document.getElementById('f-role').value.trim();
+    if (!company || !role) { alert('Company and Role are required.'); return; }
+    const data = {
+      company, role,
+      status: document.getElementById('f-status').value,
+      source: document.getElementById('f-source').value,
+      score: document.getElementById('f-score').value,
+      date_applied: document.getElementById('f-date').value,
+      link: document.getElementById('f-link').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+    };
+    if (editingId) {
+      const idx = jobs.findIndex(x => x.id === editingId);
+      if (idx >= 0) jobs[idx] = { ...jobs[idx], ...data };
+    } else {
+      jobs.unshift({ id: getId(), date_added: new Date().toISOString().split('T')[0], ...data });
+    }
+    save();
+    render();
+    closeModal();
+  }
+
+  function deleteJob(id) {
+    if (!confirm('Delete this job entry?')) return;
+    jobs = jobs.filter(x => x.id !== id);
+    save();
+    render();
+  }
+
+  function sortBy(key) {
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = true; }
+    render();
+  }
+
+  function getFiltered() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const st = document.getElementById('filter-status').value;
+    const src = document.getElementById('filter-source').value;
+    return jobs.filter(j => {
+      const text = [j.company, j.role, j.notes, j.source].join(' ').toLowerCase();
+      return (!q || text.includes(q)) && (!st || j.status === st) && (!src || j.source === src);
+    });
+  }
+
+  function renderStats(filtered) {
+    const counts = {};
+    Object.keys(STATUS_CONFIG).forEach(s => counts[s] = 0);
+    jobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
+    const total = jobs.length;
+    const active = (counts['Applied'] || 0) + (counts['Phone Screen'] || 0) + (counts['Interview'] || 0);
+    const offers = counts['Offer'] || 0;
+    const responded = total - (counts['Wishlist'] || 0) - (counts['Applied'] || 0);
+    const applied = counts['Applied'] || 0;
+    const rateBase = total - (counts['Wishlist'] || 0);
+    const rate = rateBase > 0 ? Math.round((responded / rateBase) * 100) : 0;
+
+    document.getElementById('stats-bar').innerHTML = `
+      <div class="stat-chip"><div class="num">${total}</div><div class="lbl">Total</div></div>
+      <div class="stat-chip"><div class="num">${active}</div><div class="lbl">Active</div></div>
+      <div class="stat-chip"><div class="num">${offers}</div><div class="lbl">Offers</div></div>
+      <div class="stat-chip"><div class="num">${counts['Rejected'] || 0}</div><div class="lbl">Rejected</div></div>
+      <div class="stat-chip"><div class="num">${rate}%</div><div class="lbl">Response Rate</div></div>
+      <div class="stat-chip"><div class="num">${filtered.length}</div><div class="lbl">Showing</div></div>
+    `;
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    filtered.sort((a, b) => {
+      let av = a[sortKey] || '', bv = b[sortKey] || '';
+      if (sortKey === 'score') { const o='ABCDF'; av=o.indexOf(av); bv=o.indexOf(bv); }
+      return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+    });
+    renderStats(filtered);
+    const tbody = document.getElementById('jobs-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No jobs found. Add one above or run python jobs/filter.py to discover matches.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(j => {
+      const sc = STATUS_CONFIG[j.status] || STATUS_CONFIG['Applied'];
+      const scoreCls = SCORE_CLS[j.score] || '';
+      return `
+        <tr>
+          <td style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);white-space:nowrap">${j.date_applied || j.date_added || ''}</td>
+          <td style="font-weight:600;white-space:nowrap">${esc(j.company)}</td>
+          <td style="max-width:200px;color:#b0c8e0">${esc(j.role)}</td>
+          <td style="font-family:var(--mono);font-size:0.68rem;color:var(--muted)">${esc(j.source)}</td>
+          <td><span class="badge ${sc.cls}">${sc.emoji} ${esc(j.status)}</span></td>
+          <td>${j.score ? `<span class="score-pill ${scoreCls}">${j.score}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
+          <td class="job-link">${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener">→ link</a>` : ''}</td>
+          <td style="max-width:220px;color:var(--muted);font-size:0.82rem;word-break:break-word">${esc(j.notes || '').slice(0,120)}${(j.notes||'').length>120?'…':''}</td>
+          <td><div class="row-actions">
+            <button class="btn-edit" onclick="openModal('${j.id}')">edit</button>
+            <button class="btn-del" onclick="deleteJob('${j.id}')">del</button>
+          </div></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function exportCSV() {
+    const cols = ['date_applied','company','role','source','status','score','link','notes'];
+    const header = cols.join(',');
+    const rows = jobs.map(j => cols.map(c => `"${String(j[c]||'').replace(/"/g,'""')}"`).join(','));
+    const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv'});
+    const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:`job-tracker-${new Date().toISOString().split('T')[0]}.csv`});
+    a.click();
+  }
+
+  function importJSON(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        const arr = Array.isArray(data) ? data : [];
+        const added = arr.filter(row => !jobs.find(j => j.link && j.link === row.link));
+        // Map filter.py output fields to dashboard fields
+        const mapped = added.map(row => ({
+          id: getId(),
+          date_added: new Date().toISOString().split('T')[0],
+          date_applied: '',
+          company: row.company || row.company_name || '',
+          role: row.role || row.position || row.title || row.job_title || '',
+          source: row.source_id || row.source || 'Other',
+          status: 'Wishlist',
+          score: '',
+          link: row.link || '',
+          notes: `Filter score: ${row.score||''}. Keywords: ${(row.matched_keywords||[]).join(', ')}`,
+        }));
+        jobs = [...mapped, ...jobs];
+        save();
+        render();
+        alert(`Imported ${mapped.length} new jobs (${added.length - mapped.length} duplicates skipped)`);
+      } catch { alert('Invalid JSON file'); }
+    };
+    reader.readAsText(file);
+    evt.target.value = '';
+  }
+
+  // Search/filter live updates
+  document.getElementById('search-input').addEventListener('input', render);
+  document.getElementById('filter-status').addEventListener('change', render);
+  document.getElementById('filter-source').addEventListener('change', render);
+
+  // Close modal on overlay click
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal')) closeModal();
+  });
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && document.getElementById('modal').classList.contains('open')) saveJob();
+  });
+
+  // Init
+  document.getElementById('last-updated').textContent = jobs.length ? `${jobs.length} jobs tracked` : 'No jobs yet';
+  render();
+</script>
+</body>
+</html>

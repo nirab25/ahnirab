@@ -1,0 +1,197 @@
+# career-ops candidate profile
+# Copy this file to config/profile.yml inside your santifer/career-ops fork
+# Docs: https://github.com/santifer/career-ops
+
+candidate:
+  name: "Amdadul Haque"
+  alias: "Nirab"
+  title: "Senior Software Engineer"
+  years_of_experience: 15
+  location: "Dhaka, Bangladesh"
+  timezone: "Asia/Dhaka"
+  target_location: "United States (Remote or Hybrid)"
+  linkedin: "https://www.linkedin.com/in/ahaque-nirab"
+  github: "https://github.com/nirab25"
+  languages:
+    - language: "English"
+      level: "Professional"
+    - language: "Bengali"
+      level: "Native"
+
+visa:
+  status: "H-1B active (transfer eligible)"
+  sponsorship_required: false          # Transfer — NOT a new cap filing
+  citizenship_restricted: false        # Excludes: US citizen/PR only roles
+  notes: >
+    Currently holds valid H-1B. Seeking H-1B transfer to US employer.
+    Do NOT filter out roles that don't explicitly mention sponsorship —
+    most companies that have ever sponsored will transfer.
+    EXCLUDE: roles requiring US citizenship, security clearance, or
+    explicitly stating "no visa sponsorship."
+
+search:
+  seniority:
+    - "Senior"
+    - "Staff"
+    - "Principal"
+    - "Lead"
+  target_roles:
+    - "Senior Software Engineer"
+    - "Senior AI Engineer"
+    - "Senior ML Engineer"
+    - "Healthcare AI Engineer"
+    - "Senior Full Stack Engineer"
+    - "MLOps Engineer"
+    - "Senior Backend Engineer"
+    - "Applied ML Engineer"
+    - "AI Platform Engineer"
+    - "Senior .NET Engineer"
+    - "Cloud Solutions Architect"
+  must_have_keywords:
+    - "Healthcare"
+    - "FHIR"
+    - "HL7"
+    - "Azure"
+    - ".NET"
+    - "LangGraph"
+    - "LangChain"
+    - "RAG"
+    - "MLOps"
+    - "AI"
+  preferred_keywords:
+    - "HIPAA"
+    - "Aidbox"
+    - "Kubernetes"
+    - "Multi-region"
+    - "MCP"
+    - "LLM"
+    - "Agentic"
+    - "Multi-agent"
+  exclude_keywords:
+    - "US citizen only"
+    - "security clearance"
+    - "clearance required"
+    - "new grad"
+    - "entry level"
+    - "0-2 years"
+    - "intern"
+  salary:
+    min_usd: 150000
+    preferred_usd: 200000
+  work_type:
+    - "Remote"
+    - "Hybrid"
+  employment_type:
+    - "Full-time"
+    - "Contract"
+
+scoring_weights:
+  # career-ops uses these weights when scoring A-F on job fit
+  healthcare_domain: 0.25        # FHIR/HL7/HIPAA — core differentiator
+  ai_ml_skills: 0.20             # LangChain/RAG/LLM/MLOps
+  cloud_azure: 0.15              # Azure AKS, DevOps, cloud-native
+  seniority_match: 0.15          # Senior/Staff/Principal
+  remote_friendly: 0.10          # Remote or timezone-flexible
+  visa_transfer: 0.10            # H-1B transfer (not new filing)
+  dotnet_backend: 0.05           # .NET Core / C#
+
+skills:
+  backend_cloud:
+    - ".NET Core"
+    - "C#"
+    - "Azure AKS"
+    - "Azure DevOps"
+    - "Docker"
+    - "Kubernetes"
+    - "Microservices"
+    - "Azure AD / Entra ID"
+    - "Azure KeyVault"
+    - "OAuth 2.0"
+    - "REST APIs"
+  healthcare_it:
+    - "FHIR"
+    - "HL7"
+    - "HIPAA"
+    - "Aidbox"
+    - "Multi-region data sync"
+    - "Clinical systems"
+    - "WebGL medical visualization"
+  ai_ml:
+    - "Python"
+    - "LangChain"
+    - "LangSmith"
+    - "LLM integration"
+    - "Prompt Engineering"
+    - "RAG (Retrieval-Augmented Generation)"
+    - "Machine Learning"
+    - "Data Science"
+    - "R"
+  systems_embedded:
+    - "C / C++"
+    - "ThreadX RTOS"
+    - "ARM"
+    - "Tizen"
+    - "Qt SDK"
+    - "Swift (iOS)"
+    - "Java (Android)"
+  databases:
+    - "PostgreSQL"
+    - "MSSQL"
+    - "Oracle"
+    - "SQLite"
+    - "PostgreSQL JSONB"
+  identity_security:
+    - "Keycloak"
+    - "IdentityServer4"
+    - "MSAL"
+    - "Microsoft Graph API"
+    - "JWT"
+  frontend:
+    - "Angular"
+    - "WebGL"
+    - "TypeScript"
+
+target_companies:
+  # Healthcare AI — top H-1B transfer priorities
+  - name: "Epic Systems"
+    domain: "healthcare-ehr"
+    notes: "EHR leader, heavy FHIR, good H-1B history"
+  - name: "Tempus AI"
+    domain: "oncology-ai"
+    notes: "AI-driven oncology, Python/ML heavy"
+  - name: "Oracle Health"
+    domain: "healthcare-cloud"
+    notes: "Cerner + Oracle cloud — Azure/cloud fit"
+  - name: "Hippocratic AI"
+    domain: "healthcare-llm"
+    notes: "LLM for healthcare, LangChain fit"
+  - name: "Flatiron Health"
+    domain: "oncology-data"
+    notes: "Oncology data, FHIR stack"
+  - name: "Microsoft"
+    domain: "cloud-ai"
+    notes: "Azure Health Data Services, AI"
+  - name: "Google Health"
+    domain: "health-ai"
+    notes: "Vertex AI, FHIR on GCP"
+  - name: "AWS Health"
+    domain: "cloud-health"
+    notes: "HealthLake FHIR, cloud"
+  - name: "Databricks"
+    domain: "data-ml-platform"
+    notes: "MLOps platform, Delta Lake"
+  - name: "Palantir"
+    domain: "data-analytics"
+    notes: "Healthcare contracts, strong sponsor history"
+
+job_sources:
+  # Used by jobs/filter.py and career-ops /scan
+  - name: "jobright-ai Daily H1B"
+    url: "https://raw.githubusercontent.com/jobright-ai/Daily-H1B-Jobs-In-Tech/main/README.md"
+    type: "github_raw"
+  - name: "Lamiiine Visa Sponsored"
+    url: "https://raw.githubusercontent.com/Lamiiine/Awesome-daily-list-of-visa-sponsored-jobs/main/README.md"
+    type: "github_raw"
+  - name: "Speedyapply 2026 AI Jobs"
+    url: "https://raw.githubusercontent.com/speedyapply/2026-AI-College-Jobs/main/README.md"
+    type: "github_raw"
