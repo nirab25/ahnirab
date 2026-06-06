@@ -131,7 +131,7 @@ EXCLUDE_KEYWORDS = [
     "internship",
 ]
 
-MIN_SCORE = 2
+MIN_SCORE = 3
 
 # ── Fetch ─────────────────────────────────────────────────────────────────────
 
@@ -169,20 +169,28 @@ def parse_table_rows(markdown: str) -> list[dict]:
             cols = [c.strip() for c in line.strip("|").split("|")]
             if len(cols) == len(headers):
                 row = {}
-                extracted_link = ""
+                apply_link = ""   # URL from a cell keyed "apply" or "link"
+                any_link   = ""   # first URL found anywhere in the row
                 for k, v in zip(headers, cols):
-                    # Capture URLs from markdown links before stripping them
-                    if not extracted_link:
-                        md_links = re.findall(r'\[[^\]]*\]\((https?://[^)]+)\)', v)
-                        if md_links:
-                            extracted_link = md_links[0]
+                    # 1. Markdown links: [text](url)
+                    md_urls = re.findall(r'\[[^\]]*\]\((https?://[^)\s]+)\)', v)
+                    # 2. HTML anchors: href="url" or href='url'
+                    html_urls = re.findall(r'href=["\']?(https?://[^"\'\s>]+)', v)
+                    cell_url = (md_urls + html_urls)
+                    if cell_url:
+                        # Prefer the URL from an explicitly named apply/link column
+                        if k in ("apply", "link", "apply_link", "job_link", "url"):
+                            apply_link = cell_url[0]
+                        if not any_link:
+                            any_link = cell_url[0]
                     val = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", v)
                     val = re.sub(r"<[^>]+>", "", val)
                     val = re.sub(r"\*+", "", val)   # strip **bold** markers
                     val = re.sub(r"_{2,}", "", val)  # strip __bold__ markers
                     row[k] = val.strip()
-                if extracted_link:
-                    row["_link"] = extracted_link
+                link = apply_link or any_link
+                if link:
+                    row["_link"] = link
                 rows.append(row)
         elif in_table and not line.startswith("|") and line != "":
             in_table = False

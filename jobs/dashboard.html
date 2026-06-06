@@ -738,17 +738,28 @@ function openDetail(id) {
     : `<button class="btn-apply-now disabled">No URL available</button>`;
 
   const hasUrl = isValidUrl(j.link);
+  const searchQ = encodeURIComponent(`${clean(j.company)} ${clean(j.role)} job apply`);
+  const googleUrl = `https://www.google.com/search?q=${searchQ}`;
+  const linkedinUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(clean(j.company) + ' ' + clean(j.role))}`;
+
+  const applyBtn = hasUrl
+    ? `<a class="btn-apply-now" href="${esc(j.link)}" target="_blank" rel="noopener">↗ Apply Now</a>`
+    : `<div style="display:flex;gap:0.4rem">
+        <a class="btn-apply-now" href="${googleUrl}" target="_blank" rel="noopener" style="flex:1;background:var(--subtle);color:var(--text);border:1px solid var(--border)">Search Google</a>
+        <a class="btn-apply-now" href="${linkedinUrl}" target="_blank" rel="noopener" style="flex:1;background:var(--blue-dim);color:var(--blue);border:1px solid var(--border)">LinkedIn Search</a>
+      </div>`;
+
   const careerOpsCmd = hasUrl
     ? `/career-ops ${j.link}`
-    : `# No URL — paste the job URL below:\n/career-ops https://...`;
-  const copyUrlCmd = hasUrl
-    ? `<button class="btn-edit-status" style="font-size:0.65rem" onclick="copyToClipboard('${j.link.replace(/'/g,"\\'")}', this, 'Copied URL!')">Copy URL</button>`
+    : `# Find the job URL first, then:\n/career-ops https://...`;
+  const copyUrlBtn = hasUrl
+    ? `<button class="btn-edit-status" style="font-size:0.65rem" onclick="copyToClipboard('${j.link.replace(/'/g,"\\'")}', this, 'Copied!')">Copy URL</button>`
     : '';
 
   document.getElementById('dp-actions').innerHTML = `
     ${applyBtn}
-    <div class="cmd-block" id="cmd-block-${j.id}">
-      <div class="cmd-label">Run in Claude Code terminal to score this job:</div>
+    <div class="cmd-block">
+      <div class="cmd-label">Claude Code — score this job A–F:</div>
       <pre>${esc(careerOpsCmd)}</pre>
       <button class="btn-copy-cmd" onclick="copyToClipboard(${JSON.stringify(careerOpsCmd)}, this, 'Copied!')">copy</button>
     </div>
@@ -758,7 +769,7 @@ function openDetail(id) {
         ${Object.keys(STATUS_CONFIG).map(s =>
           `<option value="${s}"${j.status===s?' selected':''}>${s}</option>`).join('')}
       </select>
-      ${copyUrlCmd}
+      ${copyUrlBtn}
     </div>
     <button class="btn-edit-status" onclick="openModal('${j.id}')">Edit full details</button>`;
 
