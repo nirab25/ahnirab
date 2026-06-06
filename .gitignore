@@ -34,3 +34,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# career-ops: ignore all source/runtime, keep only our config files
+career-ops/*
+!career-ops/cv.md
+!career-ops/portals.yml
+!career-ops/config/
+career-ops/config/*
+!career-ops/config/profile.yml
+!career-ops/config/portals.yml

@@ -1,0 +1,122 @@
+# career-ops portal/source configuration
+# Copy to config/portals.yml inside your santifer/career-ops fork
+# These are the job sources scanned by /career-ops scan and jobs/filter.py
+
+portals:
+
+  # ── GitHub H-1B Job Repos (raw README, updated daily) ──────────────────────
+  - id: jobright_h1b
+    name: "Jobright AI — Daily H1B Tech Jobs"
+    url: "https://github.com/jobright-ai/Daily-H1B-Jobs-In-Tech"
+    raw_url: "https://raw.githubusercontent.com/jobright-ai/Daily-H1B-Jobs-In-Tech/main/README.md"
+    type: github_readme
+    update_frequency: daily
+    notes: >
+      Tracks latest H1B sponsorship jobs explicitly stating H-1B or where company
+      sponsored in the past 2 years. Best source for verified sponsors.
+      Tip: Check Applied-Researcher/Multi-agent/GraphRAG listings — exact LangGraph fit.
+
+  - id: lamiiine_visa
+    name: "Lamiiine — Awesome Daily Visa-Sponsored Jobs"
+    url: "https://github.com/Lamiiine/Awesome-daily-list-of-visa-sponsored-jobs"
+    raw_url: "https://raw.githubusercontent.com/Lamiiine/Awesome-daily-list-of-visa-sponsored-jobs/main/README.md"
+    type: github_readme
+    update_frequency: daily
+    notes: >
+      Daily visa-sponsored jobs including relocation. Contains Senior MLOps,
+      Full-Stack AI, ML Engineer AI Platform roles. Filter: US only (many EU roles).
+
+  - id: speedyapply_ai
+    name: "Speedyapply — 2026 AI/ML Jobs"
+    url: "https://github.com/speedyapply/2026-AI-College-Jobs"
+    raw_url: "https://raw.githubusercontent.com/speedyapply/2026-AI-College-Jobs/main/README.md"
+    type: github_readme
+    update_frequency: daily
+    notes: >
+      2026 AI/ML job list. More new-grad skewed but useful to identify
+      AI companies that sponsor. Filter for Senior/Staff roles only.
+
+  # ── LinkedIn Saved Search URLs ──────────────────────────────────────────────
+  # Paste these into browser to get fresh results; bookmark each search
+  - id: linkedin_healthcare_ai
+    name: "LinkedIn — Healthcare AI Engineer"
+    search_query: "Healthcare AI Engineer OR Healthcare ML Engineer"
+    filters: "f_TPR=r604800&f_WT=2&f_E=4%2C5"   # Past week · Remote · Senior/Director
+    type: linkedin_search
+    notes: "Senior healthcare AI + remote filter"
+
+  - id: linkedin_dotnet_azure_h1b
+    name: "LinkedIn — Senior .NET Azure"
+    search_query: "Senior .NET Engineer Azure Healthcare"
+    filters: "f_TPR=r604800&f_WT=2&f_E=4%2C5"
+    type: linkedin_search
+    notes: "Core .NET + Azure stack, healthcare domain"
+
+  - id: linkedin_langgraph_rag
+    name: "LinkedIn — LangGraph RAG AI Engineer"
+    search_query: "LangGraph OR LangChain OR RAG \"AI Engineer\" Senior"
+    filters: "f_TPR=r604800&f_WT=2&f_E=4%2C5"
+    type: linkedin_search
+    notes: "LangGraph/multi-agent roles — exact skill match"
+
+  - id: linkedin_fhir_engineer
+    name: "LinkedIn — FHIR Software Engineer"
+    search_query: "FHIR HL7 \"Software Engineer\" Senior"
+    filters: "f_TPR=r604800&f_WT=2&f_E=4%2C5"
+    type: linkedin_search
+    notes: "Healthcare interoperability specialists"
+
+  - id: linkedin_mlops
+    name: "LinkedIn — MLOps Senior Engineer"
+    search_query: "MLOps \"Senior\" OR \"Staff\" Engineer ML Platform"
+    filters: "f_TPR=r604800&f_WT=2&f_E=4%2C5"
+    type: linkedin_search
+    notes: "ML infrastructure/platform engineering"
+
+  # ── H-1B Visa History Sites ─────────────────────────────────────────────────
+  - id: myvisajobs
+    name: "MyVisaJobs — H-1B Sponsors"
+    url: "https://www.myvisajobs.com/Reports/2025-H1B-Visa-Sponsor.aspx"
+    type: visa_research
+    notes: >
+      Filter by: Software Engineers, $150k+, company size >500.
+      Cross-reference with your target companies list.
+
+  - id: h1bgrader
+    name: "H1BGrader — Employer Grades"
+    url: "https://h1bgrader.com"
+    type: visa_research
+    notes: >
+      Check H-1B approval rates, RFE rates, and wage levels for specific employers
+      before applying. Avoid employers with <80% approval rate.
+
+  # ── Direct Company Careers ──────────────────────────────────────────────────
+  - id: epic_careers
+    name: "Epic Systems Careers"
+    url: "https://careers.epic.com"
+    type: company_careers
+    roles_to_watch: ["Software Developer", "Technical Project Manager", "AI Engineer"]
+
+  - id: oracle_health_careers
+    name: "Oracle Health Careers"
+    url: "https://careers.oracle.com/jobs/search?q=health"
+    type: company_careers
+    roles_to_watch: ["Senior Software Engineer", "Cloud Engineer", "AI Engineer"]
+
+  - id: microsoft_health_careers
+    name: "Microsoft Health & Life Sciences"
+    url: "https://jobs.microsoft.com/search?q=health+azure+engineer"
+    type: company_careers
+    roles_to_watch: ["Senior SWE", "Principal SWE", "AI Engineer"]
+
+  - id: tempus_careers
+    name: "Tempus AI Careers"
+    url: "https://www.tempus.com/careers"
+    type: company_careers
+    roles_to_watch: ["ML Engineer", "AI Engineer", "Software Engineer"]
+
+  - id: flatiron_careers
+    name: "Flatiron Health Careers"
+    url: "https://flatiron.com/careers"
+    type: company_careers
+    roles_to_watch: ["Senior Software Engineer", "Data Engineer", "ML Engineer"]
