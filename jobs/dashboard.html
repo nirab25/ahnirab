@@ -26,11 +26,55 @@
       position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px);
     }
     header h1 { font-family: var(--mono); font-size: 0.9rem; color: var(--blue); }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
     header span { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+
+    /* ── Layout: sidebar + main ── */
+    .layout { display: flex; min-height: calc(100vh - 61px); }
+
+    /* ── Date sidebar ── */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      padding: 1rem 0;
+      position: sticky; top: 61px; height: calc(100vh - 61px); overflow-y: auto;
+    }
+    .sidebar-title {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted); padding: 0 1rem 0.75rem;
+      border-bottom: 1px solid var(--border); margin-bottom: 0.5rem;
+    }
+    .date-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.55rem 1rem; cursor: pointer; transition: background 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .date-item:hover { background: var(--card); }
+    .date-item.active { background: var(--card); border-left-color: var(--blue); }
+    .date-item .date-label { font-family: var(--mono); font-size: 0.72rem; color: var(--text); }
+    .date-item .date-count {
+      font-family: var(--mono); font-size: 0.65rem;
+      background: var(--subtle); color: var(--muted);
+      padding: 0.1rem 0.4rem; border-radius: 3px;
+    }
+    .date-item.active .date-label { color: var(--blue); }
+    .date-item.active .date-count { background: var(--blue-dim); color: var(--blue); }
+    .sidebar-all {
+      font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+      padding: 0.55rem 1rem; cursor: pointer; display: flex;
+      align-items: center; justify-content: space-between;
+      border-left: 2px solid transparent; transition: background 0.15s;
+    }
+    .sidebar-all:hover { background: var(--card); }
+    .sidebar-all.active { background: var(--card); border-left-color: var(--blue); color: var(--blue); }
+
+    /* ── Main content ── */
+    .main { flex: 1; min-width: 0; }
 
     /* ── Stats bar ── */
     .stats {
-      display: flex; gap: 1rem; padding: 1rem 2rem; flex-wrap: wrap;
+      display: flex; gap: 1rem; padding: 1rem 1.5rem; flex-wrap: wrap;
       border-bottom: 1px solid var(--border);
     }
     .stat-chip {
@@ -40,9 +84,25 @@
     .stat-chip .num { font-family: var(--mono); font-size: 1.2rem; font-weight: 600; color: var(--blue); }
     .stat-chip .lbl { font-size: 0.72rem; color: var(--muted); }
 
+    /* ── Batch banner ── */
+    .batch-banner {
+      display: none; margin: 0.75rem 1.5rem 0;
+      background: var(--card); border: 1px solid var(--border2); border-radius: 6px;
+      padding: 0.6rem 1rem; align-items: center; justify-content: space-between;
+    }
+    .batch-banner.visible { display: flex; }
+    .batch-banner span { font-family: var(--mono); font-size: 0.75rem; color: var(--blue); }
+    .batch-banner small { font-size: 0.72rem; color: var(--muted); }
+    .btn-del-batch {
+      font-family: var(--mono); font-size: 0.68rem; padding: 0.25rem 0.6rem;
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      border-radius: 3px; cursor: pointer;
+    }
+    .btn-del-batch:hover { border-color: var(--red); color: var(--red); }
+
     /* ── Toolbar ── */
     .toolbar {
-      display: flex; gap: 0.75rem; padding: 1rem 2rem; flex-wrap: wrap; align-items: center;
+      display: flex; gap: 0.75rem; padding: 0.75rem 1.5rem; flex-wrap: wrap; align-items: center;
       border-bottom: 1px solid var(--border);
     }
     input, select, textarea {
@@ -53,7 +113,7 @@
     input:focus, select:focus, textarea:focus { border-color: var(--blue); }
     input::placeholder { color: var(--muted); }
     select option { background: var(--card); }
-    .toolbar input[type="text"] { flex: 1; min-width: 200px; }
+    .toolbar input[type="text"] { flex: 1; min-width: 180px; }
     button {
       cursor: pointer; border: none; border-radius: 4px; font-family: var(--mono);
       font-size: 0.75rem; padding: 0.45rem 1rem; transition: all 0.2s;
@@ -66,7 +126,7 @@
     .btn-import:hover { border-color: var(--green); color: var(--green); }
 
     /* ── Table ── */
-    .table-wrap { overflow-x: auto; padding: 1rem 2rem; }
+    .table-wrap { overflow-x: auto; padding: 0.75rem 1.5rem; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th {
       font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
@@ -139,16 +199,18 @@
 
     /* ── Workflow tip ── */
     .tip-box {
-      margin: 0 2rem 1rem; background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 1.25rem 1.5rem;
+      margin: 0.75rem 1.5rem; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem 1.25rem;
     }
-    .tip-box h3 { font-family: var(--mono); font-size: 0.72rem; color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .tip-box h3 { font-family: var(--mono); font-size: 0.72rem; color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
     .tip-box ol { padding-left: 1.2rem; }
-    .tip-box li { font-size: 0.82rem; color: var(--muted); padding: 0.2rem 0; line-height: 1.6; }
+    .tip-box li { font-size: 0.82rem; color: var(--muted); padding: 0.15rem 0; line-height: 1.6; }
     .tip-box code { font-family: var(--mono); font-size: 0.75rem; background: var(--subtle); padding: 0.1rem 0.35rem; border-radius: 3px; color: var(--text); }
 
-    @media (max-width: 640px) {
-      .stats, .toolbar, .table-wrap, .tip-box { padding: 0.75rem 1rem; }
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .stats, .toolbar, .table-wrap { padding: 0.75rem 1rem; }
       .form-grid { grid-template-columns: 1fr; }
       .form-full { grid-column: span 1; }
     }
@@ -158,71 +220,99 @@
 
 <header>
   <h1>// job-tracker</h1>
-  <span id="last-updated"></span>
+  <div class="header-right">
+    <span id="header-status">Loading...</span>
+  </div>
 </header>
 
-<!-- Stats bar -->
-<div class="stats" id="stats-bar"></div>
+<div class="layout">
 
-<!-- Toolbar -->
-<div class="toolbar">
-  <input type="text" id="search-input" placeholder="Search company, role, notes..." />
-  <select id="filter-status">
-    <option value="">All Statuses</option>
-    <option value="Wishlist">Wishlist</option>
-    <option value="Applied">Applied</option>
-    <option value="Phone Screen">Phone Screen</option>
-    <option value="Interview">Interview</option>
-    <option value="Offer">Offer</option>
-    <option value="Rejected">Rejected</option>
-    <option value="Withdrawn">Withdrawn</option>
-  </select>
-  <select id="filter-source">
-    <option value="">All Sources</option>
-    <option value="jobright_h1b">Jobright H1B</option>
-    <option value="lamiiine_visa">Lamiiine Visa</option>
-    <option value="speedyapply_ai">Speedyapply AI</option>
-    <option value="LinkedIn">LinkedIn</option>
-    <option value="Company Site">Company Site</option>
-    <option value="Referral">Referral</option>
-    <option value="Other">Other</option>
-  </select>
-  <button class="btn-add" onclick="openModal()">+ Add Job</button>
-  <button class="btn-export" onclick="exportCSV()">Export CSV</button>
-  <button class="btn-import" onclick="document.getElementById('import-file').click()">Import JSON</button>
-  <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)" />
-</div>
+  <!-- Date Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-title">Search Runs</div>
+    <div class="sidebar-all active" id="sidebar-all" onclick="selectDate(null)">
+      <span>All dates</span>
+      <span class="date-count" id="all-count">0</span>
+    </div>
+    <div id="date-list"></div>
+  </nav>
 
-<!-- Workflow tip -->
-<div class="tip-box">
-  <h3>Workflow</h3>
-  <ol>
-    <li>Run <code>python jobs/filter.py</code> to get today's H-1B matches from GitHub repos</li>
-    <li>Paste a job URL into Claude Code → type <code>/career-ops</code> → get A–F score + tailored CV PDF</li>
-    <li>Add promising jobs here (score B+ recommended) and track status through the pipeline</li>
-    <li>For skills gaps found by career-ops, run <code>/career-ops training</code> to get course recommendations</li>
-    <li>Before interviews, run <code>/career-ops deep [company]</code> for company research + prep questions</li>
-  </ol>
-</div>
+  <!-- Main -->
+  <div class="main">
 
-<!-- Table -->
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th onclick="sortBy('date_added')">Date</th>
-        <th onclick="sortBy('company')">Company</th>
-        <th onclick="sortBy('role')">Role</th>
-        <th onclick="sortBy('source')">Source</th>
-        <th onclick="sortBy('status')">Status</th>
-        <th onclick="sortBy('score')">Score</th>
-        <th>Link</th>
-        <th onclick="sortBy('notes')">Notes</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="jobs-tbody"></tbody>
-  </table>
+    <!-- Stats -->
+    <div class="stats" id="stats-bar"></div>
+
+    <!-- Batch banner (shown when a date is selected) -->
+    <div class="batch-banner" id="batch-banner">
+      <div>
+        <span id="banner-date"></span>
+        <small id="banner-meta"></small>
+      </div>
+      <button class="btn-del-batch" onclick="deleteBatch()">Delete this batch</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input type="text" id="search-input" placeholder="Search company, role, notes..." />
+      <select id="filter-status">
+        <option value="">All Statuses</option>
+        <option value="Wishlist">Wishlist</option>
+        <option value="Applied">Applied</option>
+        <option value="Phone Screen">Phone Screen</option>
+        <option value="Interview">Interview</option>
+        <option value="Offer">Offer</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Withdrawn">Withdrawn</option>
+      </select>
+      <select id="filter-source">
+        <option value="">All Sources</option>
+        <option value="jobright_h1b">Jobright H1B</option>
+        <option value="lamiiine_visa">Lamiiine Visa</option>
+        <option value="speedyapply_ai">Speedyapply AI</option>
+        <option value="LinkedIn">LinkedIn</option>
+        <option value="Company Site">Company Site</option>
+        <option value="Referral">Referral</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="btn-add" onclick="openModal()">+ Add Job</button>
+      <button class="btn-export" onclick="exportCSV()">Export CSV</button>
+      <button class="btn-import" onclick="document.getElementById('import-file').click()">Import JSON</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)" />
+    </div>
+
+    <!-- Workflow tip (hidden after first import) -->
+    <div class="tip-box" id="tip-box">
+      <h3>Workflow</h3>
+      <ol>
+        <li>Run <code>python jobs/filter.py</code> → get today's H-1B matches → import the JSON here</li>
+        <li>Each import is stored by date — use the sidebar to browse runs history</li>
+        <li>Paste a job URL into Claude Code → <code>/career-ops</code> → get A–F score + tailored CV PDF</li>
+        <li>Update job status as you progress through the pipeline</li>
+        <li>For skills gaps, run <code>/career-ops training</code> in your career-ops fork</li>
+      </ol>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('date_found')">Found</th>
+            <th onclick="sortBy('company')">Company</th>
+            <th onclick="sortBy('role')">Role</th>
+            <th onclick="sortBy('source')">Source</th>
+            <th onclick="sortBy('status')">Status</th>
+            <th onclick="sortBy('score')">Score</th>
+            <th>Link</th>
+            <th onclick="sortBy('notes')">Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="jobs-tbody"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- Add/Edit Modal -->
@@ -282,8 +372,8 @@
         <input type="url" id="f-link" placeholder="https://..." />
       </div>
       <div class="form-group form-full">
-        <label>Notes (skills gap, interview prep, contacts...)</label>
-        <textarea id="f-notes" placeholder="e.g. Requires LangGraph experience — run /career-ops training. Recruiter: Jane Doe"></textarea>
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Skills gap, interview prep, recruiter contacts..."></textarea>
       </div>
     </div>
     <div class="modal-actions">
@@ -294,11 +384,15 @@
 </div>
 
 <script>
-  const STORAGE_KEY = 'job_tracker_v1';
-  let jobs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const STORAGE_KEY = 'job_tracker_v2';
+  // Storage format: { jobs: [...], batches: { "2026-06-06": { count, imported_at } } }
+  let store = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"jobs":[],"batches":{}}');
+  if (!store.batches) store.batches = {};
+
   let editingId = null;
-  let sortKey = 'date_added';
+  let sortKey = 'date_found';
   let sortAsc = false;
+  let selectedDate = null; // null = all dates
 
   const STATUS_CONFIG = {
     'Wishlist':      { cls: 'badge-wishlist',  emoji: '◎' },
@@ -309,27 +403,223 @@
     'Rejected':      { cls: 'badge-rejected',  emoji: '✕' },
     'Withdrawn':     { cls: 'badge-withdrawn', emoji: '↩' },
   };
-
   const SCORE_CLS = { A:'score-a', B:'score-b', C:'score-c', D:'score-d', F:'score-f' };
 
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
-    document.getElementById('last-updated').textContent =
-      'Last saved: ' + new Date().toLocaleTimeString();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    document.getElementById('header-status').textContent =
+      `${store.jobs.length} jobs · saved ${new Date().toLocaleTimeString()}`;
   }
 
   function getId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
+  /* ── Date sidebar ── */
+  function getDates() {
+    const counts = {};
+    store.jobs.forEach(j => {
+      const d = j.date_found || j.date_added || 'unknown';
+      counts[d] = (counts[d] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[0].localeCompare(a[0]));
+  }
+
+  function selectDate(date) {
+    selectedDate = date;
+    document.querySelectorAll('.date-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('sidebar-all').classList.toggle('active', date === null);
+    if (date !== null) {
+      const el = document.querySelector(`.date-item[data-date="${date}"]`);
+      if (el) el.classList.add('active');
+    }
+    // Show/hide batch banner
+    const banner = document.getElementById('batch-banner');
+    if (date && store.batches[date]) {
+      const b = store.batches[date];
+      document.getElementById('banner-date').textContent = `Run: ${date}`;
+      document.getElementById('banner-meta').textContent =
+        `  ${b.count} jobs imported · ${b.imported_at || ''}`;
+      banner.classList.add('visible');
+    } else {
+      banner.classList.remove('visible');
+    }
+    render();
+  }
+
+  function renderSidebar() {
+    const dates = getDates();
+    document.getElementById('all-count').textContent = store.jobs.length;
+    document.getElementById('date-list').innerHTML = dates.map(([d, count]) => `
+      <div class="date-item${selectedDate === d ? ' active' : ''}" data-date="${d}" onclick="selectDate('${d}')">
+        <span class="date-label">${d}</span>
+        <span class="date-count">${count}</span>
+      </div>`).join('');
+    // Hide tip box once there's data
+    document.getElementById('tip-box').style.display = store.jobs.length ? 'none' : '';
+  }
+
+  function deleteBatch() {
+    if (!selectedDate) return;
+    const count = store.jobs.filter(j => (j.date_found || j.date_added) === selectedDate).length;
+    if (!confirm(`Delete all ${count} jobs from ${selectedDate}? This cannot be undone.`)) return;
+    store.jobs = store.jobs.filter(j => (j.date_found || j.date_added) !== selectedDate);
+    delete store.batches[selectedDate];
+    save();
+    selectDate(null);
+    renderSidebar();
+    render();
+  }
+
+  /* ── Filtering ── */
+  function getFiltered() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const st = document.getElementById('filter-status').value;
+    const src = document.getElementById('filter-source').value;
+    return store.jobs.filter(j => {
+      const text = [j.company, j.role, j.notes, j.source].join(' ').toLowerCase();
+      const dateMatch = !selectedDate || (j.date_found || j.date_added) === selectedDate;
+      return dateMatch && (!q || text.includes(q)) && (!st || j.status === st) && (!src || j.source === src);
+    });
+  }
+
+  /* ── Stats ── */
+  function renderStats(filtered) {
+    const counts = {};
+    Object.keys(STATUS_CONFIG).forEach(s => counts[s] = 0);
+    filtered.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
+    const total = filtered.length;
+    const active = (counts['Applied']||0) + (counts['Phone Screen']||0) + (counts['Interview']||0);
+    const responded = total - (counts['Wishlist']||0) - (counts['Applied']||0);
+    const rateBase = total - (counts['Wishlist']||0);
+    const rate = rateBase > 0 ? Math.round((responded / rateBase) * 100) : 0;
+    document.getElementById('stats-bar').innerHTML = `
+      <div class="stat-chip"><div class="num">${total}</div><div class="lbl">${selectedDate ? 'This Run' : 'Total'}</div></div>
+      <div class="stat-chip"><div class="num">${active}</div><div class="lbl">Active</div></div>
+      <div class="stat-chip"><div class="num">${counts['Offer']||0}</div><div class="lbl">Offers</div></div>
+      <div class="stat-chip"><div class="num">${counts['Rejected']||0}</div><div class="lbl">Rejected</div></div>
+      <div class="stat-chip"><div class="num">${rate}%</div><div class="lbl">Response Rate</div></div>
+      <div class="stat-chip"><div class="num">${getDates().length}</div><div class="lbl">Runs</div></div>`;
+  }
+
+  /* ── Main render ── */
+  function render() {
+    const filtered = getFiltered();
+    filtered.sort((a, b) => {
+      let av = a[sortKey] || '', bv = b[sortKey] || '';
+      if (sortKey === 'score') { const o = 'ABCDF'; av = o.indexOf(av); bv = o.indexOf(bv); }
+      return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+    });
+    renderStats(filtered);
+    renderSidebar();
+    const tbody = document.getElementById('jobs-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="9">${
+        store.jobs.length ? 'No jobs match the current filters.' :
+        'No jobs yet. Import a matched_jobs.json file to get started.'
+      }</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = filtered.map(j => {
+      const sc = STATUS_CONFIG[j.status] || STATUS_CONFIG['Wishlist'];
+      const scoreCls = SCORE_CLS[j.score] || '';
+      return `
+        <tr>
+          <td style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);white-space:nowrap">${j.date_found || j.date_added || ''}</td>
+          <td style="font-weight:600;white-space:nowrap">${esc(j.company)}</td>
+          <td style="max-width:200px;color:#b0c8e0">${esc(j.role)}</td>
+          <td style="font-family:var(--mono);font-size:0.68rem;color:var(--muted)">${esc(j.source)}</td>
+          <td><span class="badge ${sc.cls}">${sc.emoji} ${esc(j.status)}</span></td>
+          <td>${j.score ? `<span class="score-pill ${scoreCls}">${j.score}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
+          <td class="job-link">${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener">→ link</a>` : ''}</td>
+          <td style="max-width:220px;color:var(--muted);font-size:0.82rem;word-break:break-word">${esc(j.notes||'').slice(0,120)}${(j.notes||'').length>120?'…':''}</td>
+          <td><div class="row-actions">
+            <button class="btn-edit" onclick="openModal('${j.id}')">edit</button>
+            <button class="btn-del" onclick="deleteJob('${j.id}')">del</button>
+          </div></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function sortBy(key) {
+    sortKey === key ? sortAsc = !sortAsc : (sortKey = key, sortAsc = true);
+    render();
+  }
+
+  function esc(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Import ── */
+  function importJSON(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        const arr = Array.isArray(data) ? data : [];
+        // Determine batch date from data or filename
+        const batchDate = arr[0]?.date_found || new Date().toISOString().split('T')[0];
+        // De-duplicate by link; keep existing if already present
+        const existingLinks = new Set(store.jobs.map(j => j.link).filter(Boolean));
+        const mapped = arr
+          .filter(row => !row.link || !existingLinks.has(row.link))
+          .map(row => ({
+            id: getId(),
+            date_found: row.date_found || batchDate,
+            date_added: new Date().toISOString().split('T')[0],
+            date_applied: '',
+            company: row.company || row.company_name || '',
+            role: row.role || row.position || row.title || row.job_title || '',
+            source: row.source_id || row.source || 'Other',
+            status: 'Wishlist',
+            score: '',
+            link: row.link || '',
+            notes: [
+              row.score ? `Filter score: ${row.score}` : '',
+              row.matched_keywords?.length ? `Keywords: ${row.matched_keywords.join(', ')}` : '',
+            ].filter(Boolean).join(' · '),
+          }));
+        store.jobs = [...mapped, ...store.jobs];
+        // Record batch metadata
+        store.batches[batchDate] = {
+          count: mapped.length,
+          imported_at: new Date().toLocaleString(),
+        };
+        save();
+        selectDate(batchDate);
+        renderSidebar();
+        alert(`Imported ${mapped.length} new jobs for ${batchDate}${arr.length - mapped.length ? ` (${arr.length - mapped.length} duplicates skipped)` : ''}`);
+      } catch { alert('Invalid JSON file'); }
+    };
+    reader.readAsText(file);
+    evt.target.value = '';
+  }
+
+  /* ── Export ── */
+  function exportCSV() {
+    const filtered = getFiltered();
+    const cols = ['date_found','company','role','source','status','score','link','notes'];
+    const header = cols.join(',');
+    const rows = filtered.map(j => cols.map(c => `"${String(j[c]||'').replace(/"/g,'""')}"`).join(','));
+    const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv'});
+    const label = selectedDate || 'all';
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: `job-tracker-${label}.csv`
+    });
+    a.click();
+  }
+
+  /* ── Modal ── */
   function openModal(id = null) {
     editingId = id;
-    const modal = document.getElementById('modal');
     document.getElementById('modal-title').textContent = id ? 'Edit Job' : 'Add Job';
     if (id) {
-      const j = jobs.find(x => x.id === id);
+      const j = store.jobs.find(x => x.id === id);
       if (!j) return;
       document.getElementById('f-company').value = j.company || '';
       document.getElementById('f-role').value = j.role || '';
-      document.getElementById('f-status').value = j.status || 'Applied';
+      document.getElementById('f-status').value = j.status || 'Wishlist';
       document.getElementById('f-source').value = j.source || 'Other';
       document.getElementById('f-score').value = j.score || '';
       document.getElementById('f-date').value = j.date_applied || '';
@@ -342,8 +632,8 @@
       document.getElementById('f-score').value = '';
       document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
     }
-    modal.classList.add('open');
-    document.getElementById('f-company').focus();
+    document.getElementById('modal').classList.add('open');
+    setTimeout(() => document.getElementById('f-company').focus(), 50);
   }
 
   function closeModal() {
@@ -365,10 +655,11 @@
       notes: document.getElementById('f-notes').value.trim(),
     };
     if (editingId) {
-      const idx = jobs.findIndex(x => x.id === editingId);
-      if (idx >= 0) jobs[idx] = { ...jobs[idx], ...data };
+      const idx = store.jobs.findIndex(x => x.id === editingId);
+      if (idx >= 0) store.jobs[idx] = { ...store.jobs[idx], ...data };
     } else {
-      jobs.unshift({ id: getId(), date_added: new Date().toISOString().split('T')[0], ...data });
+      const today = new Date().toISOString().split('T')[0];
+      store.jobs.unshift({ id: getId(), date_found: today, date_added: today, ...data });
     }
     save();
     render();
@@ -377,146 +668,24 @@
 
   function deleteJob(id) {
     if (!confirm('Delete this job entry?')) return;
-    jobs = jobs.filter(x => x.id !== id);
+    store.jobs = store.jobs.filter(x => x.id !== id);
     save();
     render();
   }
 
-  function sortBy(key) {
-    if (sortKey === key) sortAsc = !sortAsc;
-    else { sortKey = key; sortAsc = true; }
-    render();
-  }
-
-  function getFiltered() {
-    const q = document.getElementById('search-input').value.toLowerCase();
-    const st = document.getElementById('filter-status').value;
-    const src = document.getElementById('filter-source').value;
-    return jobs.filter(j => {
-      const text = [j.company, j.role, j.notes, j.source].join(' ').toLowerCase();
-      return (!q || text.includes(q)) && (!st || j.status === st) && (!src || j.source === src);
-    });
-  }
-
-  function renderStats(filtered) {
-    const counts = {};
-    Object.keys(STATUS_CONFIG).forEach(s => counts[s] = 0);
-    jobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
-    const total = jobs.length;
-    const active = (counts['Applied'] || 0) + (counts['Phone Screen'] || 0) + (counts['Interview'] || 0);
-    const offers = counts['Offer'] || 0;
-    const responded = total - (counts['Wishlist'] || 0) - (counts['Applied'] || 0);
-    const applied = counts['Applied'] || 0;
-    const rateBase = total - (counts['Wishlist'] || 0);
-    const rate = rateBase > 0 ? Math.round((responded / rateBase) * 100) : 0;
-
-    document.getElementById('stats-bar').innerHTML = `
-      <div class="stat-chip"><div class="num">${total}</div><div class="lbl">Total</div></div>
-      <div class="stat-chip"><div class="num">${active}</div><div class="lbl">Active</div></div>
-      <div class="stat-chip"><div class="num">${offers}</div><div class="lbl">Offers</div></div>
-      <div class="stat-chip"><div class="num">${counts['Rejected'] || 0}</div><div class="lbl">Rejected</div></div>
-      <div class="stat-chip"><div class="num">${rate}%</div><div class="lbl">Response Rate</div></div>
-      <div class="stat-chip"><div class="num">${filtered.length}</div><div class="lbl">Showing</div></div>
-    `;
-  }
-
-  function render() {
-    const filtered = getFiltered();
-    filtered.sort((a, b) => {
-      let av = a[sortKey] || '', bv = b[sortKey] || '';
-      if (sortKey === 'score') { const o='ABCDF'; av=o.indexOf(av); bv=o.indexOf(bv); }
-      return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
-    });
-    renderStats(filtered);
-    const tbody = document.getElementById('jobs-tbody');
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No jobs found. Add one above or run python jobs/filter.py to discover matches.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = filtered.map(j => {
-      const sc = STATUS_CONFIG[j.status] || STATUS_CONFIG['Applied'];
-      const scoreCls = SCORE_CLS[j.score] || '';
-      return `
-        <tr>
-          <td style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);white-space:nowrap">${j.date_applied || j.date_added || ''}</td>
-          <td style="font-weight:600;white-space:nowrap">${esc(j.company)}</td>
-          <td style="max-width:200px;color:#b0c8e0">${esc(j.role)}</td>
-          <td style="font-family:var(--mono);font-size:0.68rem;color:var(--muted)">${esc(j.source)}</td>
-          <td><span class="badge ${sc.cls}">${sc.emoji} ${esc(j.status)}</span></td>
-          <td>${j.score ? `<span class="score-pill ${scoreCls}">${j.score}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
-          <td class="job-link">${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener">→ link</a>` : ''}</td>
-          <td style="max-width:220px;color:var(--muted);font-size:0.82rem;word-break:break-word">${esc(j.notes || '').slice(0,120)}${(j.notes||'').length>120?'…':''}</td>
-          <td><div class="row-actions">
-            <button class="btn-edit" onclick="openModal('${j.id}')">edit</button>
-            <button class="btn-del" onclick="deleteJob('${j.id}')">del</button>
-          </div></td>
-        </tr>`;
-    }).join('');
-  }
-
-  function esc(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function exportCSV() {
-    const cols = ['date_applied','company','role','source','status','score','link','notes'];
-    const header = cols.join(',');
-    const rows = jobs.map(j => cols.map(c => `"${String(j[c]||'').replace(/"/g,'""')}"`).join(','));
-    const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv'});
-    const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:`job-tracker-${new Date().toISOString().split('T')[0]}.csv`});
-    a.click();
-  }
-
-  function importJSON(evt) {
-    const file = evt.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const data = JSON.parse(e.target.result);
-        const arr = Array.isArray(data) ? data : [];
-        const added = arr.filter(row => !jobs.find(j => j.link && j.link === row.link));
-        // Map filter.py output fields to dashboard fields
-        const mapped = added.map(row => ({
-          id: getId(),
-          date_added: new Date().toISOString().split('T')[0],
-          date_applied: '',
-          company: row.company || row.company_name || '',
-          role: row.role || row.position || row.title || row.job_title || '',
-          source: row.source_id || row.source || 'Other',
-          status: 'Wishlist',
-          score: '',
-          link: row.link || '',
-          notes: `Filter score: ${row.score||''}. Keywords: ${(row.matched_keywords||[]).join(', ')}`,
-        }));
-        jobs = [...mapped, ...jobs];
-        save();
-        render();
-        alert(`Imported ${mapped.length} new jobs (${added.length - mapped.length} duplicates skipped)`);
-      } catch { alert('Invalid JSON file'); }
-    };
-    reader.readAsText(file);
-    evt.target.value = '';
-  }
-
-  // Search/filter live updates
+  /* ── Listeners ── */
   document.getElementById('search-input').addEventListener('input', render);
   document.getElementById('filter-status').addEventListener('change', render);
   document.getElementById('filter-source').addEventListener('change', render);
-
-  // Close modal on overlay click
-  document.getElementById('modal').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal')) closeModal();
-  });
-
-  // Keyboard shortcut
+  document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && document.getElementById('modal').classList.contains('open')) saveJob();
   });
 
-  // Init
-  document.getElementById('last-updated').textContent = jobs.length ? `${jobs.length} jobs tracked` : 'No jobs yet';
+  /* ── Init ── */
+  document.getElementById('header-status').textContent =
+    store.jobs.length ? `${store.jobs.length} jobs tracked` : 'No jobs yet';
   render();
 </script>
 </body>
